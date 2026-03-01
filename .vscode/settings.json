@@ -1,0 +1,8 @@
+{
+   // "clangd.path": "D:/QQdownload/LLVM/LLVM/bin/clang.exe",
+    "clangd.arguments": [
+        "--compile-commands-dir=build",
+        "--background-index",
+        "--query-driver=D:/QQdownload/xPack/xPack/xpack-arm-none-eabi-gcc-14.2.1-1.1/bin/arm-none-eabi-*"
+    ]
+}

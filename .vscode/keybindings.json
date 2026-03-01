@@ -1,0 +1,17 @@
+[
+{
+    "key": "ctrl+shift+alt+b",
+    "command": "workbench.action.tasks.runTask",
+    "args": "build task"
+},
+{
+    "key": "ctrl+shift+r",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Cmake rebuild"
+},
+{
+    "key": "ctrl+shift+f",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Flash STM32"
+}
+]

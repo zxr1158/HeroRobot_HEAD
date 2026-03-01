@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DAP-link",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/build/Dust_HERORobotHEAD.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "device": "STM32F407IGHX",
+            "servertype": "openocd",
+            "configFiles": [
+                "${workspaceRoot}/config/openocd_dap.cfg",
+            ],
+            "runToEntryPoint": "main",
+        },
+        {
+            "name": "DAP-Attach",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/build/Dust_HERORobotHEAD.elf",
+            "request": "attach",
+            "type": "cortex-debug",
+            "device": "STM32F407IGHX",
+            "servertype": "openocd",
+            "configFiles": [
+                "${workspaceRoot}/config/openocd_dap.cfg",
+            ],
+        },
+    ]
+}

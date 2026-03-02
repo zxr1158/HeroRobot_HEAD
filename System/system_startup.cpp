@@ -57,8 +57,8 @@ void Bsp_BringUp(void)
      static UartTxTask s_uart_tx_task;
      s_uart_tx_task.Start();
 
-    static SpiTxTask s_spi_tx_task;
-    s_spi_tx_task.Start();
+   // static SpiTxTask s_spi_tx_task;
+   // s_spi_tx_task.Start();//SPI层不再使用Topic
 
     // USB serialization/send is handled by BSP driver (bsp_usb_send_pc)
 }
@@ -132,10 +132,10 @@ void startup_thread(void *argument)
     Modules_BringUp();
     App_Start();
 
-    //vTaskDelete(NULL);
-    for(;;){  
-        DebugTools::Instance().VofaSendFloat(13.5F);
-        DebugTools::Instance().VofaSendTail();
-        osDelay(50);
-    }
+    vTaskDelete(NULL);
+    // for(;;){  
+    //     DebugTools::Instance().VofaSendFloat(YAW);
+    //     DebugTools::Instance().VofaSendTail();
+    //     osDelay(50);
+    // }
 }

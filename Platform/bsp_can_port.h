@@ -27,6 +27,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "can.h"
 
 // App-layer CAN abstraction (HAL-free)
 

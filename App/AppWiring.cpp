@@ -27,6 +27,7 @@
 #include "bsp_can_port.h"
 #include "bsp_uart_port.h"
 #include "bsp_usb_port.h"
+#include "can.h"
 
 #include "../Communication/dvc_mcu_comm.h"  // AUTOAIM_INFO_ID / REMOTE_CONTROL_ID / IMU_INFO_ID
 #include "../Communication/dvc_pc_comm.h"

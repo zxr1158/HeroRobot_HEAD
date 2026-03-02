@@ -30,6 +30,7 @@ constexpr float kRefTempC = 40.0f;
 constexpr bool kCheatMode = true;
 constexpr float kCheatYawGyroAbsThreshold = 0.003f;
 }
+uint32_t Times =1000;
 
 Bmi088::Bmi088()
     : drv_(Bmi088Drv::Instance())
@@ -64,7 +65,7 @@ void Bmi088::HwInit()
         temperature_pid_.configure(cfg);
     }
 
-    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_4);//PWM加热
+    //HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_4);//PWM加热
 
     // BMI088 init (0 means OK in this codebase)
     while (drv_.Init()) {
@@ -169,23 +170,23 @@ void Bmi088::Task()
             gyro_bias_sum_[2] += gyro_[2];
             bias_samples_++;
 
-            if (bias_samples_ >= kGyroBiasAvgSamples) {
+            if (bias_samples_ >= Times) {
                 const float inv_n = 1.0f / static_cast<float>(bias_samples_);
                 gyro_bias_[0] = gyro_bias_sum_[0] * inv_n;
                 gyro_bias_[1] = gyro_bias_sum_[1] * inv_n;
                 gyro_bias_[2] = gyro_bias_sum_[2] * inv_n;
-                stage_ = Stage::WarmUp;
+                stage_ = Stage::Running;
             }
         } else if (stage_ == Stage::WarmUp) {
             // 温度稳定判断
-            if (std::fabs(temp_c_ - kRefTempC) < 0.5f) {
-                temp_stable_ticks_++;
-                if (temp_stable_ticks_ > kTempStableTicks) {
-                    stage_ = Stage::Running;
-                }
-            } else {
-                temp_stable_ticks_ = 0;
-            }
+            // if (std::fabs(temp_c_ - kRefTempC) < 0.5f) {
+            //     temp_stable_ticks_++;
+            //     if (temp_stable_ticks_ > kTempStableTicks) {
+            //         stage_ = Stage::Running;
+            //     }
+            // } else {
+            //     temp_stable_ticks_ = 0;
+            // }
         } else {
             // Running: update attitude
             float gx = gyro_[0] - gyro_bias_[0];
@@ -197,7 +198,6 @@ void Bmi088::Task()
                     gz = 0.0f;
                 }
             }
-
             quat_ekf_.Update(gx, gy, gz, accel_[0], accel_[1], accel_[2]);
             mahony_.Update(gx, gy, gz, accel_[0], accel_[1], accel_[2], 0, 0, 0);
             mahony_.ComputeAngles();
@@ -222,21 +222,21 @@ void Bmi088::Task()
             const float sp = sinf(theta * 0.5f);
             const float cr = cosf(phi * 0.5f);
             const float sr = sinf(phi * 0.5f);
-
+       
             float q_vision[4] = {0};
             q_vision[0] = cy * cp * cr + sy * sp * sr;
             q_vision[1] = cy * cp * sr - sy * sp * cr;
             q_vision[2] = cy * sp * cr + sy * cp * sr;
             q_vision[3] = sy * cp * cr - cy * sp * sr;
-      
+        DebugTools::Instance().VofaSendFloat(yaw_deg);
+        DebugTools::Instance().VofaSendTail();
             //Publish(pitch_deg, yaw_deg, yaw_total_deg, yaw_omega_rad_s, pitch_omega_rad_s, q_vision);
         }
-
+      
         // 4) temperature control @100Hz
-        if ((loop_count_ % 10) == 0) {
-            TemperatureCtrlStep();
-        }
-
+        // if ((loop_count_ % 10) == 0) {
+        //     TemperatureCtrlStep();
+        // }
         osDelay(pdMS_TO_TICKS(kImuPeriodMs));
     }
 }

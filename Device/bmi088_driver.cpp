@@ -188,10 +188,10 @@ uint8_t Bmi088Drv::InitAccel()
     for (const auto& item : kInitTable)
     {
         BMI088_accel_write_single_reg(item.reg, item.value);
-        BMI088_delay_us(BMI088_COM_WAIT_SENSOR_TIME);
+        HAL_Delay(1);
 
         BMI088_accel_read_single_reg(item.reg, res);
-        BMI088_delay_us(BMI088_COM_WAIT_SENSOR_TIME);
+        HAL_Delay(1);
 
         if (res != item.value)
         {

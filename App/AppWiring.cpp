@@ -61,15 +61,18 @@ static void can1_rx_callback(const BspCanFrame* frame)
     }
 
     switch (frame->id) {
-    case motor_ids::kLeftWheel:
-        actuator::instances::dji_201.CanRxCpltCallback(frame);
-        break;
-    case motor_ids::kRightWheel:
-        actuator::instances::dji_202.CanRxCpltCallback(frame);
-        break;
-    case motor_ids::kPoke:
-        actuator::instances::dji_203.CanRxCpltCallback(frame);
-        break;
+     case motor_ids::RBShoot:
+    actuator::instances::dji_201.CanRxCpltCallback(frame);
+    break;
+     case motor_ids::RFShoot :
+    actuator::instances::dji_202.CanRxCpltCallback(frame);
+    break;
+     case motor_ids::LFShoot:
+    actuator::instances::dji_203.CanRxCpltCallback(frame);
+    break;
+     case motor_ids::LBShoot:
+    actuator::instances::dji_204.CanRxCpltCallback(frame);
+    break;
     default:
         break;
     }
@@ -115,9 +118,9 @@ void App_WirePlatformIo(void)
     bsp_uart_init(bsp_uart_get(BSP_UART1), uart1_referee_callback, kUartRxBufferSize);
 
     // CAN
-    //auto* can1 = bsp_can_get(BSP_CAN_BUS1);
+    auto* can1 = bsp_can_get(BSP_CAN_BUS1);
     //auto* can2 = bsp_can_get(BSP_CAN_BUS2);
 
-   // (void)bsp_can_add_rx_callback(can1, can1_rx_callback);
+    (void)bsp_can_add_rx_callback(can1, can1_rx_callback);
    // (void)bsp_can_add_rx_callback(can2, can2_rx_callback);
 }

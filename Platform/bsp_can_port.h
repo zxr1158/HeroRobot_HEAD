@@ -70,7 +70,7 @@ BspCanHandle bsp_can_get(BspCanBus bus);
 // Start RX and register receive callback (legacy single-callback API).
 // Note: This overwrites any previously registered callbacks.
 void bsp_can_init(BspCanHandle h, BspCanRxCallback cb);
-
+void can_filter_mask_config(CAN_HandleTypeDef *hcan, uint8_t object_para, uint32_t id, uint32_t mask_id);
 // Start RX (if not started yet) and APPEND a receive callback.
 // Multiple callbacks will be invoked in registration order.
 // Returns false if the internal callback list is full or handle is invalid.

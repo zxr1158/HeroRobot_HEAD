@@ -1,9 +1,9 @@
 #include "dji_c6xx.hpp"
 
 #include "motor_registry.hpp"
-
+#include "system_startup.h"
 #include "cmsis_os2.h"
-
+#include "debug_tools.h"
 #include "utils/alg_constrain.h"
 
 extern "C" {
@@ -26,6 +26,7 @@ struct DjiGroupTxCtx {
     orb::CanBus bus = orb::CanBus::MYCAN1;
     uint16_t tx_id = 0x200;
 };
+
 
 // 4 个电机的目标电流 raw（将被打包进 0x200 组帧，单位是 DJI 协议的 raw current）
 // 由运行时线程在每个周期调用 DjiC6xxMin::Update() 后写入。
@@ -166,11 +167,11 @@ void DjiC6xxMin::CanRxCpltCallback(const BspCanFrame* frame) {
     }
 
     const uint8_t* data = frame->data;
-    const uint16_t enc = (static_cast<uint16_t>(data[0]) << 8) | static_cast<uint16_t>(data[1]);
+    const uint16_t enc = (static_cast<uint16_t>(data[0]) << 8) | static_cast<uint16_t>(data[1]);//编码器反馈
     const int16_t omega_rpm =
-        static_cast<int16_t>((static_cast<uint16_t>(data[2]) << 8) | static_cast<uint16_t>(data[3]));
+        static_cast<int16_t>((static_cast<uint16_t>(data[2]) << 8) | static_cast<uint16_t>(data[3]));//转速（rpm）
     const int16_t current_raw =
-        static_cast<int16_t>((static_cast<uint16_t>(data[4]) << 8) | static_cast<uint16_t>(data[5]));
+        static_cast<int16_t>((static_cast<uint16_t>(data[4]) << 8) | static_cast<uint16_t>(data[5]));//电流（A)
     const uint8_t temp = data[6];
 
     // unwrap encoder (same idea as legacy driver, but minimal)
@@ -184,13 +185,13 @@ void DjiC6xxMin::CanRxCpltCallback(const BspCanFrame* frame) {
     }
     last_enc_ = enc;
 
-    const int32_t total_enc = total_round_ * static_cast<int32_t>(cfg_.enc_per_round) + static_cast<int32_t>(enc);
-    const float motor_angle = (static_cast<float>(total_enc) / static_cast<float>(cfg_.enc_per_round)) * k2pi;
-    now_angle_ = (cfg_.gearbox_ratio != 0.0f) ? (motor_angle / cfg_.gearbox_ratio) : motor_angle;
+    const int32_t total_enc = total_round_ * static_cast<int32_t>(cfg_.enc_per_round) + static_cast<int32_t>(enc);//总计编码
+    const float motor_angle = (static_cast<float>(total_enc) / static_cast<float>(cfg_.enc_per_round)) * k2pi;//归化到0~2pi,总角度
+    now_angle_ = (cfg_.gearbox_ratio != 0.0f) ? (motor_angle / cfg_.gearbox_ratio) : motor_angle;//机械角度
 
     // omega: rpm -> rad/s (motor side) then / gearbox_ratio to output side
     const float omega_motor = (static_cast<float>(omega_rpm) * k2pi) / 60.0f;
-    now_omega_out_ = (cfg_.gearbox_ratio != 0.0f) ? (omega_motor / cfg_.gearbox_ratio) : omega_motor;
+    now_omega_out_ = (cfg_.gearbox_ratio != 0.0f) ? (omega_motor / cfg_.gearbox_ratio) : omega_motor;//机械转速，rad/s
 
     // current: legacy uses 16384/20 scale; keep raw->A mapping consistent
     now_current_ = static_cast<float>(current_raw) * (20.0f / 16384.0f);

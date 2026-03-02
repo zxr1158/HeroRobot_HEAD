@@ -228,8 +228,7 @@ void Bmi088::Task()
             q_vision[1] = cy * cp * sr - sy * sp * cr;
             q_vision[2] = cy * sp * cr + sy * cp * sr;
             q_vision[3] = sy * cp * cr - cy * sp * sr;
-        DebugTools::Instance().VofaSendFloat(yaw_deg);
-        DebugTools::Instance().VofaSendTail();
+     
             //Publish(pitch_deg, yaw_deg, yaw_total_deg, yaw_omega_rad_s, pitch_omega_rad_s, q_vision);
         }
       

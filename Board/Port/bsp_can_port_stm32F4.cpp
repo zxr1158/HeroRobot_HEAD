@@ -5,6 +5,22 @@
 
 #include <string.h>
 
+// 滤波器编号
+#define CAN_FILTER(x) ((x) << 3)
+
+// 接收队列
+#define CAN_FIFO_0 (0 << 2)
+#define CAN_FIFO_1 (1 << 2)
+
+//标准帧或扩展帧
+#define CAN_STDID (0 << 1)
+#define CAN_EXTID (1 << 1)
+
+// 数据帧或遥控帧
+#define CAN_DATA_TYPE (0 << 0)
+#define CAN_REMOTE_TYPE (1 << 0)
+
+
 struct BspCanOpaque {
     CAN_HandleTypeDef* hcan;
 
@@ -106,6 +122,9 @@ static void ensure_started(BspCanOpaque* impl)
     (void)HAL_CAN_Start(impl->hcan);
     (void)HAL_CAN_ActivateNotification(impl->hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
     (void)HAL_CAN_ActivateNotification(impl->hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
+    can_filter_mask_config(impl->hcan, CAN_FILTER(0) | CAN_FIFO_0 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+     can_filter_mask_config(impl->hcan, CAN_FILTER(1) | CAN_FIFO_1 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+    
     impl->started = true;
 }
 
@@ -208,4 +227,35 @@ bool bsp_can_send(BspCanHandle h, const BspCanFrame* tx)
     // }
 
     return HAL_CAN_AddTxMessage(impl->hcan, &th, const_cast<uint8_t*>(tx->data), &used_mailbox);
+}
+
+void can_filter_mask_config(CAN_HandleTypeDef *hcan, uint8_t object_para, uint32_t id, uint32_t mask_id)
+{
+    CAN_FilterTypeDef filter = {0};
+
+    assert_param(hcan != NULL);
+
+    // 解析参数
+    uint8_t filter_index = object_para >> 3;                //滤波器索引
+    uint8_t fifo_select  = (object_para >> 2) & 0x01;       //FIFO选择
+    uint8_t id_type_flag = (object_para >> 1) & 0x01;       //ID类型
+    uint8_t frame_type   = object_para & 0x01;              //帧类型
+
+
+    // 标准ID
+    filter.FilterIdHigh = 0x000;
+    filter.FilterIdLow = 0x0000;
+    filter.FilterMaskIdHigh = 0x000;
+    filter.FilterMaskIdLow = 0x0000;
+
+    filter.FilterFIFOAssignment = (fifo_select == 0) ? CAN_FILTER_FIFO0 : CAN_FILTER_FIFO1;
+    filter.FilterBank = filter_index;
+    filter.FilterMode = CAN_FILTERMODE_IDMASK;
+    filter.FilterScale = CAN_FILTERSCALE_32BIT;
+    filter.FilterActivation = ENABLE;
+    filter.SlaveStartFilterBank = 14;       //CAN2滤波器为14 - 27
+
+    UNUSED(frame_type);                     // 帧类型在FDCAN中不需要配置
+
+    HAL_CAN_ConfigFilter(hcan, &filter);
 }

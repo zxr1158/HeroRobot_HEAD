@@ -32,16 +32,16 @@ void Booster::Init()
 
 void Booster::Exit()
 {
-    static constexpr uint16_t kIds[3] = {
-        static_cast<uint16_t>(motor_ids::kLeftWheel),
-        static_cast<uint16_t>(motor_ids::kRightWheel),
-        static_cast<uint16_t>(motor_ids::kPoke),
-    };
+    // static constexpr uint16_t kIds[3] = {
+    //     static_cast<uint16_t>(motor_ids::kLeftWheel),
+    //     static_cast<uint16_t>(motor_ids::kRightWheel),
+    //     static_cast<uint16_t>(motor_ids::kPoke),
+    // };
 
     for (uint8_t i = 0; i < 3; ++i) {
         orb::DjiC6xxOmegaCmd c{};
         c.bus = orb::CanBus::MYCAN1;
-        c.rx_std_id = kIds[i];
+        //c.rx_std_id = kIds[i];
         c.omega = 0.0f;
         orb::dji_c6xx_omega_cmd.publish(c);
     }
@@ -97,17 +97,17 @@ void Booster::Task()
             SetPokeOmega(-5.0);
         }
 
-        static constexpr uint16_t kIds[3] = {
-            static_cast<uint16_t>(motor_ids::kLeftWheel),
-            static_cast<uint16_t>(motor_ids::kRightWheel),
-            static_cast<uint16_t>(motor_ids::kPoke),
-        };
+        // static constexpr uint16_t kIds[3] = {
+        //     static_cast<uint16_t>(motor_ids::kLeftWheel),
+        //     static_cast<uint16_t>(motor_ids::kRightWheel),
+        //     static_cast<uint16_t>(motor_ids::kPoke),
+        // };
 
         // 摩擦轮电机
         for (uint8_t i = 0; i < 3; ++i) {
             orb::DjiC6xxOmegaCmd c{};
             c.bus = orb::CanBus::MYCAN1;
-            c.rx_std_id = kIds[i];
+           // c.rx_std_id = kIds[i];
             c.omega = 0.0f;
             if (i == 0) {
                 c.omega = left_wheel_omega_;

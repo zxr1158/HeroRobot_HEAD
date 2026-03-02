@@ -18,7 +18,7 @@ public:
     struct Config {
         orb::CanBus bus = orb::CanBus::MYCAN1;
         uint16_t rx_std_id = 0x201;
-        float gearbox_ratio = 1.0f;
+        float gearbox_ratio = 1.0f;//减速比，摩擦轮暂时不使用
         ControlMethod method = ControlMethod::Omega;
 
         float kp = 0.0f;

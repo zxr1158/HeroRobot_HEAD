@@ -134,8 +134,7 @@ void startup_thread(void *argument)
 
     vTaskDelete(NULL);
     // for(;;){  
-    //     DebugTools::Instance().VofaSendFloat(YAW);
-    //     DebugTools::Instance().VofaSendTail();
+     
     //     osDelay(50);
     // }
 }

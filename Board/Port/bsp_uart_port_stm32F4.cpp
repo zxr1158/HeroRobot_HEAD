@@ -12,9 +12,11 @@ struct BspUartOpaque {
 
 static uint8_t s_uart1_rx[512];
 static uint8_t s_uart7_rx[512];
+static uint8_t s_uart3_rx[512];
 
-static BspUartOpaque s_uart1{&huart6, nullptr, s_uart1_rx, 0};
-static BspUartOpaque s_uart7{&huart3, nullptr, s_uart7_rx, 0};
+static BspUartOpaque s_uart1{&huart1, nullptr, s_uart1_rx, 0};
+static BspUartOpaque s_uart3{&huart3, nullptr, s_uart3_rx, 0};
+static BspUartOpaque s_uart6{&huart6, nullptr, s_uart7_rx, 0};
 
 static inline BspUartOpaque* to_impl(BspUartHandle h) {
     return reinterpret_cast<BspUartOpaque*>(h);
@@ -23,7 +25,8 @@ static inline BspUartOpaque* to_impl(BspUartHandle h) {
 static inline BspUartOpaque* from_hal(UART_HandleTypeDef* huart)
 {
     if (huart == &huart1) return &s_uart1;
-    if (huart == &huart3) return &s_uart7;
+    if (huart == &huart6) return &s_uart6;
+    if (huart == &huart3) return &s_uart3;
     return nullptr;
 }
 
@@ -32,7 +35,8 @@ BspUartHandle bsp_uart_get(BspUartId id)
     switch (id)
     {
         case BSP_UART1: return reinterpret_cast<BspUartHandle>(&s_uart1);
-        case BSP_UART7: return reinterpret_cast<BspUartHandle>(&s_uart7);
+        case BSP_UART6: return reinterpret_cast<BspUartHandle>(&s_uart6);
+        case BSP_UART3: return reinterpret_cast<BspUartHandle>(&s_uart3);
         default: return nullptr;
     }
 }

@@ -54,6 +54,8 @@ struct RcControl {
     FrictionWheel friction_wheel;   // 摩擦轮控制
     Shoot shoot;                    // 发射控制
     Eject eject;                    // 退弹控制
+    uint8_t shoot_switch;           // 摩擦轮
+    uint8_t Fire_switch;            // 拨弹盘
 };
 
 

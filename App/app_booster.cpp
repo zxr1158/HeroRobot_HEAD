@@ -32,16 +32,17 @@ void Booster::Init()
 
 void Booster::Exit()
 {
-    // static constexpr uint16_t kIds[3] = {
-    //     static_cast<uint16_t>(motor_ids::kLeftWheel),
-    //     static_cast<uint16_t>(motor_ids::kRightWheel),
-    //     static_cast<uint16_t>(motor_ids::kPoke),
-    // };
+    static constexpr uint16_t kIds[4] = {
+        static_cast<uint16_t>(motor_ids::RBShoot),
+        static_cast<uint16_t>(motor_ids::RFShoot),
+        static_cast<uint16_t>(motor_ids::LFShoot),
+        static_cast<uint16_t>(motor_ids::LBShoot),
+    };
 
-    for (uint8_t i = 0; i < 3; ++i) {
+    for (uint8_t i = 0; i <= 3; ++i) {
         orb::DjiC6xxOmegaCmd c{};
         c.bus = orb::CanBus::MYCAN1;
-        //c.rx_std_id = kIds[i];
+        c.rx_std_id = kIds[i];
         c.omega = 0.0f;
         orb::dji_c6xx_omega_cmd.publish(c);
     }
@@ -56,19 +57,20 @@ void Booster::TaskEntry(void *param)
 void Booster::Task()
 {
     Subscription<orb::RcControl> rc_control_sub(orb::rc_control);
-    Subscription<orb::PcControl> pc_control_sub(orb::pc_control);
+    //Subscription<orb::PcControl> pc_control_sub(orb::pc_control);
     orb::RcControl rc_control{};
-    orb::PcControl pc_control{};
+    //orb::PcControl pc_control{};
 
     for (;;) 
     {
         (void)rc_control_sub.copy(rc_control);
-        (void)pc_control_sub.copy(pc_control);
+        //(void)pc_control_sub.copy(pc_control);
 
-        if (rc_control.friction_wheel == orb::FrictionWheel::FrictionWheelOn){
-            SetLeftWheelOmega(45); //40
-            SetRightWheelOmega(-45);
-        }else if(rc_control.friction_wheel == orb::FrictionWheel::FrictionWheelOff){
+        if (rc_control.shoot_switch == 1U){
+            SetLeftWheelOmega(20); //40
+            SetRightWheelOmega(-20);
+        }
+        else {
             SetLeftWheelOmega(0);
             SetRightWheelOmega(0);
         }
@@ -76,45 +78,44 @@ void Booster::Task()
         // 没穷举出所有情况
 
         // 开火逻辑
-        if ((rc_control.shoot == orb::Shoot::ShootOn) 
-        && (rc_control.eject == orb::Eject::EjectOff)
-        ) {
-            if (((rc_control.auto_aim == orb::AutoAim::AutoAimOn)
-            && (pc_control.shoot_switch == 1))
-            || (rc_control.auto_aim == orb::AutoAim::AutoAimOff)
-            ) {
-                SetPokeOmega(8.0);//20
-            } 
-        }
+        // if ((rc_control.shoot == orb::Shoot::ShootOn) 
+        // && (rc_control.eject == orb::Eject::EjectOff)
+        // ) {
+        //     if (((rc_control.auto_aim == orb::AutoAim::AutoAimOn))
+        //    // && (pc_control.shoot_switch == 1))
+        //     || (rc_control.auto_aim == orb::AutoAim::AutoAimOff)
+        //     ) {
+        //         SetPokeOmega(8.0);//20
+        //     } 
+        // }
         // 停止逻辑
-        if ((rc_control.shoot == orb::Shoot::ShootOff) 
-            && (rc_control.eject == orb::Eject::EjectOff)){
-            SetPokeOmega(0);
-        }
-        // 退弹逻辑
-        if ((rc_control.shoot == orb::Shoot::ShootOff) 
-            && (rc_control.eject == orb::Eject::EjectOn)){
-            SetPokeOmega(-5.0);
-        }
+        // if ((rc_control.shoot == orb::Shoot::ShootOff) 
+        //     && (rc_control.eject == orb::Eject::EjectOff)){
+        //     SetPokeOmega(0);
+        // }
+        // // 退弹逻辑
+        // if ((rc_control.shoot == orb::Shoot::ShootOff) 
+        //     && (rc_control.eject == orb::Eject::EjectOn)){
+        //     SetPokeOmega(-5.0);
+        // }
 
-        // static constexpr uint16_t kIds[3] = {
-        //     static_cast<uint16_t>(motor_ids::kLeftWheel),
-        //     static_cast<uint16_t>(motor_ids::kRightWheel),
-        //     static_cast<uint16_t>(motor_ids::kPoke),
-        // };
-
+         static constexpr uint16_t kIds[4] = {
+        static_cast<uint16_t>(motor_ids::RBShoot),
+        static_cast<uint16_t>(motor_ids::RFShoot),
+        static_cast<uint16_t>(motor_ids::LFShoot),
+        static_cast<uint16_t>(motor_ids::LBShoot),};
         // 摩擦轮电机
-        for (uint8_t i = 0; i < 3; ++i) {
+        for (uint8_t i = 0; i <= 3; ++i) {
             orb::DjiC6xxOmegaCmd c{};
             c.bus = orb::CanBus::MYCAN1;
-           // c.rx_std_id = kIds[i];
+            c.rx_std_id = kIds[i];
             c.omega = 0.0f;
-            if (i == 0) {
-                c.omega = left_wheel_omega_;
-            } else if (i == 1) {
+            if (i <=1 ) {
                 c.omega = right_wheel_omega_;
-            } else if (i == 2) {
-                c.omega = poke_omega_;
+            } 
+            else 
+            {
+                c.omega = left_wheel_omega_;
             }
             orb::dji_c6xx_omega_cmd.publish(c);
         }

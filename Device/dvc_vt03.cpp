@@ -135,7 +135,7 @@ void VT03::RxCpltCallback(uint8_t* buffer, uint16_t length)
         info.chassis_spin = (tmp->keyboard.bit.SHIFT != 0)
                        ? orb::ChassisSpin::ChassisSpinCW
                        : static_cast<orb::ChassisSpin>(mode_sw);
-        info.super_cap = (pause != 0) ? orb::SuperCap::SuperCapDischarge : orb::SuperCap::SuperCapCharge;
+        //info.super_cap = (pause != 0) ? orb::SuperCap::SuperCapDischarge : orb::SuperCap::SuperCapCharge;
         info.auto_aim = (mouse_right != 0) ? orb::AutoAim::AutoAimOn : orb::AutoAim::AutoAimOff;
         info.gimbal_set_zero = (tmp->keyboard.bit.B != 0) ? orb::GimbalSetZero::GimbalSetZeroOn : orb::GimbalSetZero::GimbalSetZeroOff;
         info.friction_wheel = (tmp->keyboard.bit.F != 0) ? orb::FrictionWheel::FrictionWheelOn : orb::FrictionWheel::FrictionWheelOff;

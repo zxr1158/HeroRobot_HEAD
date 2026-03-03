@@ -35,11 +35,12 @@
 
 #include "../Device/motor_ids.hpp"
 
+#include "dvc_dr16.h"
 #include "motors/dji_c6xx.hpp"
 #include "dvc_vt03.h"
 
-// USART7 VOFA debug
-static void uart7_debug_callback(uint8_t *buffer, uint16_t length)
+// USART6 VOFA debug
+static void uart6_debug_callback(uint8_t *buffer, uint16_t length)
 {
     DebugTools::Instance().VofaReceiveCallback(buffer, length);
 }
@@ -49,6 +50,13 @@ static void uart1_referee_callback(uint8_t *buffer, uint16_t length)
 {
     VT03::Instance().RxCpltCallback(buffer, length);
 }
+
+static void uart3_referee_callback(uint8_t *buffer, uint16_t length)
+{
+Dr16::Instance().RxCpltCallback(buffer, length);
+}
+
+
 
 // 底盘电机
 static void can1_rx_callback(const BspCanFrame* frame)
@@ -114,8 +122,8 @@ void App_WirePlatformIo(void)
     //bsp_usb_init(bsp_usb_get(), usb_tx_callback, usb_rx_callback);
 
     // UART
-    //bsp_uart_init(bsp_uart_get(BSP_UART7), uart7_debug_callback, kUartRxBufferSize);
-    bsp_uart_init(bsp_uart_get(BSP_UART1), uart1_referee_callback, kUartRxBufferSize);
+    bsp_uart_init(bsp_uart_get(BSP_UART3), uart3_referee_callback, kUartRxBufferSize);
+   // bsp_uart_init(bsp_uart_get(BSP_UART6), uart6_debug_callback, kUartRxBufferSize);
 
     // CAN
     auto* can1 = bsp_can_get(BSP_CAN_BUS1);

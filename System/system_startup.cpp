@@ -33,8 +33,9 @@
 #include "../Device/debug_tools.h"
 #include "../Device/motor_ids.hpp"
 #include "motors/dji_c6xx.hpp"
+#include "rc_control_topics.hpp"
 #include "dvc_vt03.h"
-
+#include "dvc_dr16.h"
 #include "bmi088.h"
 #include "usart.h"
 float YAW;
@@ -89,11 +90,13 @@ void Modules_BringUp(void)
     // c.current_limit = 20.0f;
 
     // auto c1 = c;
-    // c1.rx_std_id = static_cast<uint16_t>(motor_ids::kLeftWheel);
+    // c1.rx_std_id = static_cast<uint16_t>(motor_ids::RBShoot);
     // auto c2 = c;
-    // c2.rx_std_id = static_cast<uint16_t>(motor_ids::kRightWheel);
+    // c2.rx_std_id = static_cast<uint16_t>(motor_ids::RFShoot);
     // auto c3 = c;
-    // c3.rx_std_id = static_cast<uint16_t>(motor_ids::kPoke);
+    // c3.rx_std_id = static_cast<uint16_t>(motor_ids::LFShoot);
+    // auto c4 = c;
+    // c4.rx_std_id = static_cast<uint16_t>(motor_ids::LBShoot);
 
     // auto* can1 = bsp_can_get(BSP_CAN_BUS1);
     // configASSERT(can1 != nullptr);
@@ -107,22 +110,26 @@ void Modules_BringUp(void)
     // actuator::instances::dji_203.Init(can1, c3);
     // actuator::instances::dji_203.JoinRuntime();
 
-    // // 上下板通讯组件初始化（CAN2）
-    // McuComm::Instance().Init(orb::CanBus::MYCAN2,bsp_can_get(BSP_CAN_BUS2));
+    // actuator::instances::dji_204.Init(can1, c4);
+    // actuator::instances::dji_204.JoinRuntime();
+
+    // 上下板通讯组件初始化（CAN2）
+    McuComm::Instance().Init(orb::CanBus::MYCAN2,bsp_can_get(BSP_CAN_BUS2));
 
     // // 裁判系统初始化（UART1 RX already started in Bsp_BringUp）
     // Referee::Instance().Init(bsp_uart_get(BSP_UART1), orb::UartPort::U1);
 
     // 接收机初始化 
-   // VT03::Instance().Init(bsp_uart_get(BSP_UART1), orb::UartPort::U1);
+    Dr16::Instance().Init(bsp_uart_get(BSP_UART3), orb::UartPort::U3);
+    //VT03::Instance().Init(bsp_uart_get(BSP_UART1), orb::UartPort::U1);
 
     // VOFA 初始化（UART7 RX already started in Bsp_BringUp）
-    DebugTools::Instance().Init(bsp_uart_get(BSP_UART1), orb::UartPort::U1);
+    DebugTools::Instance().Init(bsp_uart_get(BSP_UART6), orb::UartPort::U6);
 }
 
 void App_Start(void)
 {
-   // Booster::Instance().Init();
+  // Booster::Instance().Init();
 }
 
 void startup_thread(void *argument)
@@ -131,9 +138,17 @@ void startup_thread(void *argument)
     Board_BringUp();
     Modules_BringUp();
     App_Start();
-
+    // Subscription<orb::RcControl> sub(orb::rc_control);
     vTaskDelete(NULL);
     // for(;;){  
+      
+    //     orb::RcControl pkt{};
+    //     while (sub.copy(pkt)) {
+    //    sub.copy(pkt);
+    //    DebugTools::Instance().VofaSendFloat((float)pkt.shoot_switch);
+    //    DebugTools::Instance().VofaSendFloat((float)pkt.Fire_switch);
+    //    DebugTools::Instance().VofaSendTail();
+    //     }
      
     //     osDelay(50);
     // }

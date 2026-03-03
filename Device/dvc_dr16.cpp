@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-
+#include"debug_tools.h"
 namespace {
 
 inline uint8_t clamp_to_u8(float v)
@@ -154,7 +154,8 @@ void Dr16::RxCpltCallback(uint8_t* buffer, uint16_t length)
 	                                                : orb::FrictionWheel::FrictionWheelOff;
 	info.shoot = (tmp.mouse.l != 0) ? orb::Shoot::ShootOn : orb::Shoot::ShootOff;
 	info.eject = (tmp.keyboard.bit.R != 0) ? orb::Eject::EjectOn : orb::Eject::EjectOff;
-
+	info.shoot_switch = tmp.switch1;
+	info.Fire_switch = tmp.switch2;
 	orb::rc_control.publish(info);
 }
 

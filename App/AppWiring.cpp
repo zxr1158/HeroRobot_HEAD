@@ -34,7 +34,7 @@
 #include "../Device/debug_tools.h"
 
 #include "../Device/motor_ids.hpp"
-
+#include "motors/dm_mit.hpp"
 #include "dvc_dr16.h"
 #include "motors/dji_c6xx.hpp"
 #include "dvc_vt03.h"
@@ -99,7 +99,9 @@ static void can2_rx_callback(const BspCanFrame* frame)
     case GIMBAL_INFO_ID:
         McuComm::Instance().RxCpltCallback(frame);
         break;
-
+    case (0x05) :
+    actuator::instances::dm_01.CanRxCpltCallback(frame);
+    break;
     default:
         break;
     }
@@ -127,8 +129,8 @@ void App_WirePlatformIo(void)
 
     // CAN
     auto* can1 = bsp_can_get(BSP_CAN_BUS1);
-    //auto* can2 = bsp_can_get(BSP_CAN_BUS2);
+    auto* can2 = bsp_can_get(BSP_CAN_BUS2);
 
-    (void)bsp_can_add_rx_callback(can1, can1_rx_callback);
-   // (void)bsp_can_add_rx_callback(can2, can2_rx_callback);
+    (void)bsp_can_init(can1, can1_rx_callback);
+    (void)bsp_can_init(can2, can2_rx_callback);
 }

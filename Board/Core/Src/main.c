@@ -112,7 +112,7 @@ int main(void)
   //MX_FREERTOS_Init();
   static const osThreadAttr_t kStartupTaskAttr = {
     .name = "startup_task",
-    .stack_size = 512,
+    .stack_size = 1024,
     .priority = (osPriority_t) osPriorityNormal
   };
   osThreadNew(startup_thread, NULL, &kStartupTaskAttr);

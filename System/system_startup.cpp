@@ -52,8 +52,8 @@ void Bsp_BringUp(void)
     
     App_WirePlatformIo();//对于CAN/UART外设初始化
 
-    // static CanTxTask s_can_tx_task;
-    // s_can_tx_task.Start();
+    static CanTxTask s_can_tx_task;
+    s_can_tx_task.Start();
 
      static UartTxTask s_uart_tx_task;
      s_uart_tx_task.Start();
@@ -79,30 +79,30 @@ void Modules_BringUp(void)
     s_bmi088.Start();//Imu的业务层，完成Imu的数据处理工作；
 
     // 大疆电机初始化（CAN1）    
-    // actuator::drivers::DjiC6xxMin::Config c{};
-    // c.bus = orb::CanBus::MYCAN1;
-    // c.method = actuator::drivers::DjiC6xxMin::ControlMethod::Omega;
+    actuator::drivers::DjiC6xxMin::Config c{};
+    c.bus = orb::CanBus::MYCAN1;
+    c.method = actuator::drivers::DjiC6xxMin::ControlMethod::Omega;
 
-    // c.gearbox_ratio = 1.0f;
-    // c.kp = 0.0f;
-    // c.ki = 0.0f;
-    // c.kd = 0.0f;
-    // c.current_limit = 20.0f;
+    c.gearbox_ratio = 1.0f;
+    c.kp = 0.5f;
+    c.ki = 0.1f;
+    c.kd = 0.0f;
+    c.current_limit = 20.0f;
 
-    // auto c1 = c;
-    // c1.rx_std_id = static_cast<uint16_t>(motor_ids::RBShoot);
-    // auto c2 = c;
-    // c2.rx_std_id = static_cast<uint16_t>(motor_ids::RFShoot);
-    // auto c3 = c;
-    // c3.rx_std_id = static_cast<uint16_t>(motor_ids::LFShoot);
-    // auto c4 = c;
-    // c4.rx_std_id = static_cast<uint16_t>(motor_ids::LBShoot);
+    auto c1 = c;
+    c1.rx_std_id = static_cast<uint16_t>(motor_ids::RBShoot);
+    auto c2 = c;
+    c2.rx_std_id = static_cast<uint16_t>(motor_ids::RFShoot);
+    auto c3 = c;
+    c3.rx_std_id = static_cast<uint16_t>(motor_ids::LFShoot);
+    auto c4 = c;
+    c4.rx_std_id = static_cast<uint16_t>(motor_ids::LBShoot);
 
-    // auto* can1 = bsp_can_get(BSP_CAN_BUS1);
-    // configASSERT(can1 != nullptr);
+    auto* can1 = bsp_can_get(BSP_CAN_BUS1);
+    configASSERT(can1 != nullptr);
     
-    // actuator::instances::dji_201.Init(can1, c1);
-    // actuator::instances::dji_201.JoinRuntime();
+    actuator::instances::dji_201.Init(can1, c1);
+    actuator::instances::dji_201.JoinRuntime();
 
     // actuator::instances::dji_202.Init(can1, c2);
     // actuator::instances::dji_202.JoinRuntime();
@@ -114,7 +114,7 @@ void Modules_BringUp(void)
     // actuator::instances::dji_204.JoinRuntime();
 
     // 上下板通讯组件初始化（CAN2）
-    McuComm::Instance().Init(orb::CanBus::MYCAN2,bsp_can_get(BSP_CAN_BUS2));
+    // McuComm::Instance().Init(orb::CanBus::MYCAN2,bsp_can_get(BSP_CAN_BUS2));
 
     // // 裁判系统初始化（UART1 RX already started in Bsp_BringUp）
     // Referee::Instance().Init(bsp_uart_get(BSP_UART1), orb::UartPort::U1);
@@ -129,7 +129,7 @@ void Modules_BringUp(void)
 
 void App_Start(void)
 {
-  // Booster::Instance().Init();
+  Booster::Instance().Init();
 }
 
 void startup_thread(void *argument)
@@ -138,7 +138,7 @@ void startup_thread(void *argument)
     Board_BringUp();
     Modules_BringUp();
     App_Start();
-    // Subscription<orb::RcControl> sub(orb::rc_control);
+    //Subscription<orb::RcControl> sub(orb::rc_control);
     vTaskDelete(NULL);
     // for(;;){  
       

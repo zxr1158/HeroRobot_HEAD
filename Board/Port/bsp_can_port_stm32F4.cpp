@@ -2,8 +2,11 @@
 
 // Board / HAL
 #include "can.h"
-
+#include "../Device/debug_tools.h"
+#include "stm32f4xx_hal_can.h"
+#include "stm32f4xx_hal_uart.h"
 #include <string.h>
+#include "usart.h"
 
 // 滤波器编号
 #define CAN_FILTER(x) ((x) << 3)
@@ -29,10 +32,12 @@ struct BspCanOpaque {
     BspCanRxCallback cbs[kMaxRxCallbacks];
     uint8_t cb_count;
     bool started;
+    uint8_t Filter_1;
+    uint8_t Filter_2;
 };
 
-static BspCanOpaque s_can1{&hcan1, {nullptr}, 0, false};
-static BspCanOpaque s_can2{&hcan2, {nullptr}, 0, false};
+static BspCanOpaque s_can1{&hcan1, {nullptr}, 0, false,CAN_FILTER(0),CAN_FILTER(1)};
+static BspCanOpaque s_can2{&hcan2, {nullptr}, 0, false,CAN_FILTER(14),CAN_FILTER(15)};
 
 static inline BspCanOpaque* to_impl(BspCanHandle h) {
     return reinterpret_cast<BspCanOpaque*>(h);
@@ -117,15 +122,30 @@ static void dispatch_rx(CAN_HandleTypeDef* hcan, uint32_t fifo)
 static void ensure_started(BspCanOpaque* impl)
 {
     if (!impl || impl->started) return;
-
+    
     // Keep behavior aligned with previous wrapper: start and enable RX interrupts.
+//  if(impl->hcan->Instance == CAN1)
+//     {
+//         can_filter_mask_config(impl->hcan, CAN_FILTER(0)| CAN_FIFO_0 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+//         can_filter_mask_config(impl->hcan, CAN_FILTER(1)| CAN_FIFO_1 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+//     }
+//     else if(impl->hcan->Instance == CAN2)
+//     {
+//         can_filter_mask_config(impl->hcan, CAN_FILTER(14)| CAN_FIFO_0 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+//         can_filter_mask_config(impl->hcan, CAN_FILTER(15)| CAN_FIFO_1 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+//     }
+    can_filter_mask_config(impl->hcan, (impl->Filter_1)| CAN_FIFO_0 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+    can_filter_mask_config(impl->hcan, (impl->Filter_2)| CAN_FIFO_1 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
+
+
+
+
     (void)HAL_CAN_Start(impl->hcan);
     (void)HAL_CAN_ActivateNotification(impl->hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
     (void)HAL_CAN_ActivateNotification(impl->hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
-    can_filter_mask_config(impl->hcan, CAN_FILTER(0) | CAN_FIFO_0 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
-     can_filter_mask_config(impl->hcan, CAN_FILTER(1) | CAN_FIFO_1 | CAN_STDID | CAN_DATA_TYPE, 0, 0);
-    
     impl->started = true;
+     HAL_UART_Transmit(&huart6,impl->hcan == &hcan1 ? (uint8_t*)&impl->hcan : (uint8_t*)&impl->hcan + sizeof(CAN_HandleTypeDef), 4, HAL_MAX_DELAY);
+ 
 }
 
 // extern "C" void HAL_FDCAN_RxFifo0Callback(CAN_HandleTypeDef* hfdcan, uint32_t RxFifo0ITs)
@@ -228,6 +248,8 @@ bool bsp_can_send(BspCanHandle h, const BspCanFrame* tx)
 
     return HAL_CAN_AddTxMessage(impl->hcan, &th, const_cast<uint8_t*>(tx->data), &used_mailbox);
 }
+
+
 
 void can_filter_mask_config(CAN_HandleTypeDef *hcan, uint8_t object_para, uint32_t id, uint32_t mask_id)
 {

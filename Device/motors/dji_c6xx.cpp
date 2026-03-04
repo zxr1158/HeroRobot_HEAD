@@ -210,7 +210,7 @@ void DjiC6xxMin::SetTargetCurrent(float current) {
 
 void DjiC6xxMin::Update() {
     if (cfg_.method == ControlMethod::Omega) {
-        target_current_ = pid_omega_.update(target_omega_out_, now_omega_out_);
+        target_current_ = target_omega_out_*0.2f;//pid_omega_.update(target_omega_out_, now_omega_out_);
     }
 
     target_current_ = float_constrain(target_current_, -cfg_.current_limit, cfg_.current_limit);
